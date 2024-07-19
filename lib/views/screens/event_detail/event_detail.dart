@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:tadbirio/bloc/qatnashgan/event_bloc.dart';
 import 'package:tadbirio/models/event_model.dart';
 import 'package:tadbirio/views/widgets/leading_button.dart';
@@ -320,7 +321,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       color: Colors.grey.withOpacity(0.5),
                       spreadRadius: 2,
                       blurRadius: 5,
-                      offset: const Offset(0, 3), // changes position of shadow
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -366,8 +367,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           context: context,
                           isScrollControlled: true,
                           builder: (context) {
-                            int selectedSeats = 1; // Default value
-                            int selectedPayment = 1; // Default value
+                            int selectedSeats = 1;
+                            int selectedPayment = 1;
                             return StatefulBuilder(
                               builder:
                                   (BuildContext context, StateSetter setState) {
@@ -542,15 +543,16 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                                   context: context,
                                                   builder: (context) {
                                                     return AlertDialog(
-                                                      title: Text(
-                                                          'Siz allaqachon ro\'yxatdan o\'tgansiz'),
+                                                      title: const Text(
+                                                          "Siz allaqachon ro'yxatdan o'tgansiz"),
                                                       actions: [
                                                         TextButton(
                                                           onPressed: () {
                                                             Navigator.pop(
                                                                 context);
                                                           },
-                                                          child: Text('OK'),
+                                                          child:
+                                                              const Text('OK'),
                                                         ),
                                                       ],
                                                     );
@@ -565,15 +567,33 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                                   context: context,
                                                   builder: (context) {
                                                     return AlertDialog(
-                                                      title: Text(
-                                                          'Muvaffaqiyatli ro\'yxatdan o\'tdingiz'),
+                                                      content: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          Image.asset(
+                                                              "assets/icons/check.gif"),
+                                                          const Text(
+                                                            "Muvaffaqiyatli ro'yxatdan o'tdingiz",
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontSize: 20,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                       actions: [
                                                         TextButton(
                                                           onPressed: () {
                                                             Navigator.pop(
                                                                 context);
                                                           },
-                                                          child: Text('OK'),
+                                                          child:
+                                                              const Text('OK'),
                                                         ),
                                                       ],
                                                     );
