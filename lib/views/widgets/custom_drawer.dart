@@ -1,4 +1,5 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,11 +22,18 @@ class _CustomDrawerState extends State<CustomDrawer> {
   String _email = '';
   String _imageUrl = '';
   String _surname = '';
+  late String _selectedLanguage;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _selectedLanguage = context.locale.languageCode;
   }
 
   Future<void> _clearPreferences() async {
@@ -43,6 +51,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
     });
   }
 
+  void _changeLanguage(String languageCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    Locale locale = Locale(languageCode);
+    context.setLocale(locale);
+    setState(() {
+      _selectedLanguage = languageCode;
+    });
+    int languageIndex = languageCode == 'uz' ? 0 : 1;
+    prefs.setInt('lang-ind', languageIndex);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -57,7 +76,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   radius: 30,
                   backgroundImage: _imageUrl.isNotEmpty
                       ? NetworkImage(_imageUrl)
-                      : const AssetImage('assets/icons/person_user.png'),
+                      : const AssetImage('assets/icons/person_user.png')
+                          as ImageProvider,
                 ),
                 const Gap(10),
                 Column(
@@ -96,7 +116,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
               children: [
                 DrawerButton(
                   image: 'plan',
-                  title: "Mening tadbirlarim",
+                  title: "mening_tadbirlarim".tr(),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -108,7 +128,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 ),
                 DrawerButton(
                   image: 'person',
-                  title: "Profil ma'lumotlari",
+                  title: "profil_malumotlari".tr(),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -120,12 +140,46 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 ),
                 DrawerButton(
                   image: 'translate',
-                  title: "Tillarni o'zgartirsh",
-                  onTap: () {},
+                  title: "tillarni_ozgartirish".tr(),
+                  onTap: () async {
+                    final RenderBox button =
+                        context.findRenderObject() as RenderBox;
+                    final RenderBox overlay = Overlay.of(context)
+                        .context
+                        .findRenderObject() as RenderBox;
+                    final RelativeRect position = RelativeRect.fromRect(
+                      Rect.fromPoints(
+                        button.localToGlobal(Offset.zero, ancestor: overlay),
+                        button.localToGlobal(
+                            button.size.bottomRight(Offset.zero),
+                            ancestor: overlay),
+                      ),
+                      Offset.zero & overlay.size,
+                    );
+
+                    final String? selectedLanguage = await showMenu<String>(
+                      context: context,
+                      position: position,
+                      items: <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'uz',
+                          child: Text("O'zbekcha"),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'ru',
+                          child: Text("Русский"),
+                        ),
+                      ],
+                    );
+
+                    if (selectedLanguage != null) {
+                      _changeLanguage(selectedLanguage);
+                    }
+                  },
                 ),
                 DrawerButton(
                   image: 'sun',
-                  title: "Tungi/Kunduzgi holat",
+                  title: "tungi_kunduzgi_holat".tr(),
                   onTap: () {
                     if (AdaptiveTheme.of(context).mode ==
                         AdaptiveThemeMode.dark) {
@@ -138,7 +192,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 const Spacer(),
                 DrawerButton(
                   image: 'log_out',
-                  title: "Chiqish",
+                  title: "Chiqish".tr(),
                   onTap: () {
                     context.read<AuthCubit>().signOut();
                     _clearPreferences();

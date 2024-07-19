@@ -1,10 +1,12 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:tadbirio/bloc/qatnashgan/event_bloc.dart';
 import 'package:tadbirio/bloc/qatnashgan/event_state.dart';
+import 'package:tadbirio/models/event_model.dart';
 import 'package:tadbirio/views/screens/favorite/favorite_screen.dart';
 import 'package:tadbirio/views/screens/notification/notification_screen.dart';
 import 'package:tadbirio/views/widgets/carousel_container.dart';
@@ -13,8 +15,17 @@ import '../../../bloc/qatnashgan/event_event.dart';
 import '../../widgets/event_card.dart';
 import '../event_detail/event_detail.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<EventModel> _filteredEvents = [];
+  String _searchQuery = "";
+  String _searchBy = "name";
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +37,7 @@ class HomeScreen extends StatelessWidget {
         forceMaterialTransparency: true,
         centerTitle: true,
         title: Text(
-          "Bosh sahifa",
+          "bosh_sahifa".tr(),
           style: TextStyle(
             color: AdaptiveTheme.of(context).mode == AdaptiveThemeMode.dark
                 ? Colors.white
@@ -79,6 +90,16 @@ class HomeScreen extends StatelessWidget {
                     event.day.isBefore(nextWeek))
                 .toList();
 
+            _filteredEvents = state.events
+                .where((event) => _searchBy == "name"
+                    ? event.title
+                        .toLowerCase()
+                        .contains(_searchQuery.toLowerCase())
+                    : event.locationName
+                        .toLowerCase()
+                        .contains(_searchQuery.toLowerCase()))
+                .toList();
+
             return CustomScrollView(
               slivers: [
                 SliverAppBar(
@@ -89,8 +110,13 @@ class HomeScreen extends StatelessWidget {
                   flexibleSpace: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
+                      onChanged: (query) {
+                        setState(() {
+                          _searchQuery = query;
+                        });
+                      },
                       decoration: InputDecoration(
-                        hintText: 'Tadbirlarni izlash...',
+                        hintText: 'tadbirlarni_izlash'.tr(),
                         prefixIcon: Padding(
                           padding: const EdgeInsets.all(15.0),
                           child: Image.asset(
@@ -100,15 +126,23 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         filled: true,
-                        suffixIcon: GestureDetector(
-                          onTap: () {},
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Image.asset(
-                              "assets/icons/suffix.png",
-                              height: 10,
+                        suffixIcon: PopupMenuButton<String>(
+                          icon: const Icon(Icons.filter_list),
+                          onSelected: (String value) {
+                            setState(() {
+                              _searchBy = value;
+                            });
+                          },
+                          itemBuilder: (BuildContext context) => [
+                            PopupMenuItem(
+                              value: 'name',
+                              child: Text('Nomi bo\'yicha'.tr()),
                             ),
-                          ),
+                            PopupMenuItem(
+                              value: 'location',
+                              child: Text('Manzili bo\'yicha'.tr()),
+                            ),
+                          ],
                         ),
                         fillColor: AdaptiveTheme.of(context).mode ==
                                 AdaptiveThemeMode.dark
@@ -122,6 +156,46 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (_searchQuery.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Card(
+                      child: ListView.separated(
+                        separatorBuilder: (context, index) {
+                          return const Divider();
+                        },
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _filteredEvents.length,
+                        itemBuilder: (context, index) {
+                          final event = _filteredEvents[index];
+                          return ListTile(
+                            title: Text(
+                              event.title,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AdaptiveTheme.of(context).mode ==
+                                        AdaptiveThemeMode.dark
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                            subtitle: Text(event.locationName),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      EventDetailPage(event: event),
+                                ),
+                              ).then((_) {
+                                eventBloc.add(LoadEvents());
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,7 +203,7 @@ class HomeScreen extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          "Yaqin 7 kun ichida",
+                          "yaqin_7_kun_ichida".tr(),
                           style: TextStyle(
                             color: AdaptiveTheme.of(context).mode ==
                                     AdaptiveThemeMode.dark
@@ -172,7 +246,7 @@ class HomeScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      "Barcha tadbirlar",
+                      "barcha_tadbirlar".tr(),
                       style: TextStyle(
                         color: AdaptiveTheme.of(context).mode ==
                                 AdaptiveThemeMode.dark

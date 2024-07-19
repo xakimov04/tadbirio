@@ -1,4 +1,5 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tadbirio/bloc/qatnashgan/event_bloc.dart';
@@ -21,7 +22,7 @@ class FavoritesScreen extends StatelessWidget {
           child: LeadingButton(),
         ),
         title: Text(
-          'Favorites',
+          'Sevimli'.tr(),
           style: TextStyle(
             color: AdaptiveTheme.of(context).mode == AdaptiveThemeMode.dark
                 ? Colors.white

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ class _AddEventPageState extends State<AddEventPage> {
   DateTime? _eventDate;
   GeoPoint _eventLocation = const GeoPoint(0, 0);
   File? _pickedImage;
+  bool _isUploading = false; // Added loading state
 
   @override
   void initState() {
@@ -100,6 +102,10 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Future<void> _pickMedia(bool isImage) async {
+    setState(() {
+      _isUploading = true; // Set loading state to true
+    });
+
     final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
       imageQuality: isImage ? 80 : null,
@@ -117,6 +123,11 @@ class _AddEventPageState extends State<AddEventPage> {
         } else {
           _videoUrl = url;
         }
+        _isUploading = false; // Set loading state to false
+      });
+    } else {
+      setState(() {
+        _isUploading = false; // Set loading state to false if no file picked
       });
     }
   }
@@ -168,7 +179,7 @@ class _AddEventPageState extends State<AddEventPage> {
           child: LeadingButton(),
         ),
         title: Text(
-          "Tadbir Qo'shish",
+          "Tadbir Qo'shish".tr(),
           style: TextStyle(
             color: AdaptiveTheme.of(context).mode == AdaptiveThemeMode.dark
                 ? Colors.white
@@ -184,61 +195,77 @@ class _AddEventPageState extends State<AddEventPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField('Nomi', (value) => _title = value),
+              _buildTextField('nomi'.tr(), (value) => _title = value),
               const Gap(10),
-              _buildDatePickerField('Kuni', _eventDate,
+              _buildDatePickerField('kuni'.tr(), _eventDate,
                   (date) => setState(() => _eventDate = date)),
               const Gap(10),
-              _buildTimePickerField('Boshlanish vaqti', _startTime,
+              _buildTimePickerField('Boshlanish vaqti'.tr(), _startTime,
                   (time) => setState(() => _startTime = time)),
               const Gap(10),
-              _buildTimePickerField('Tugash vaqti', _stopTime,
+              _buildTimePickerField('Tugash vaqti'.tr(), _stopTime,
                   (time) => setState(() => _stopTime = time)),
               const Gap(10),
-              _buildTextField(
-                  "Tadbir haqida ma'lumot", (value) => _description = value,
+              _buildTextField("tadbir_haqida_ma'lumot".tr(),
+                  (value) => _description = value,
                   maxLines: 3),
               const Gap(10),
               Row(
                 children: [
-                  _buildMediaButton(Icons.photo_camera, 'Rasm',
-                      () => _pickMedia(true), _pickedImage),
-                  const SizedBox(width: 10),
-                  _buildMediaButton(Icons.video_camera_back, 'Video',
-                      () => _pickMedia(false), null),
+                  _buildMediaButton(
+                    Icons.photo_camera,
+                    'Rasm'.tr(),
+                    () => _pickMedia(true),
+                    _pickedImage,
+                    isUploading: _isUploading, 
+                  ),
                 ],
               ),
               const Gap(10),
-              const Text('Manzilni belgilash',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('manzilni_belgilash'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               const Gap(10),
               Stack(
                 children: [
-                  SizedBox(
+                  Container(
                     height: 200,
-                    child: YandexMap(
-                      rotateGesturesEnabled: false,
-                      zoomGesturesEnabled: false,
-                      scrollGesturesEnabled: false,
-                      onMapCreated: (controller) {
-                        mapController = controller;
-                        _updateMapLocation();
-                      },
-                      mapObjects: [
-                        PlacemarkMapObject(
-                          mapId: const MapObjectId("location"),
-                          point: Point(
-                              latitude: _eventLocation.latitude,
-                              longitude: _eventLocation.longitude),
-                          icon: PlacemarkIcon.single(
-                            PlacemarkIconStyle(
-                              scale: .1,
-                              image: BitmapDescriptor.fromAssetImage(
-                                  "assets/icons/marker.png"),
-                            ),
-                          ),
-                        )
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
                       ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: YandexMap(
+                        rotateGesturesEnabled: false,
+                        zoomGesturesEnabled: false,
+                        scrollGesturesEnabled: false,
+                        onMapCreated: (controller) {
+                          mapController = controller;
+                          _updateMapLocation();
+                        },
+                        mapObjects: [
+                          PlacemarkMapObject(
+                            mapId: const MapObjectId("location"),
+                            point: Point(
+                                latitude: _eventLocation.latitude,
+                                longitude: _eventLocation.longitude),
+                            icon: PlacemarkIcon.single(
+                              PlacemarkIconStyle(
+                                scale: .1,
+                                image: BitmapDescriptor.fromAssetImage(
+                                    "assets/icons/marker.png"),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -256,7 +283,7 @@ class _AddEventPageState extends State<AddEventPage> {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: _submitForm,
-                    child: const Text("Qo'shish"),
+                    child: Text("qoshish".tr()),
                   ),
                 ),
               ),
@@ -334,19 +361,22 @@ class _AddEventPageState extends State<AddEventPage> {
   }
 
   Widget _buildMediaButton(
-      IconData icon, String label, VoidCallback onPressed, File? pickedImage) {
+      IconData icon, String label, VoidCallback onPressed, File? pickedImage,
+      {bool isUploading = false}) {
     return Expanded(
       child: ElevatedButton.icon(
-        icon: pickedImage != null
-            ? Image.file(
-                pickedImage,
-                width: 30,
-                height: 30,
-                fit: BoxFit.cover,
-              )
-            : Icon(icon),
+        icon: isUploading
+            ? const CircularProgressIndicator()
+            : pickedImage != null
+                ? Image.file(
+                    pickedImage,
+                    width: 30,
+                    height: 30,
+                    fit: BoxFit.cover,
+                  )
+                : Icon(icon),
         label: Text(label),
-        onPressed: onPressed,
+        onPressed: isUploading ? null : onPressed,
       ),
     );
   }

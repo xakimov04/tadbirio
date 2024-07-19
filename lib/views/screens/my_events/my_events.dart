@@ -1,5 +1,6 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:tadbirio/views/screens/my_events/event_kirish.dart';
 import 'package:tadbirio/views/screens/my_events/add_event.dart';
 import 'package:tadbirio/views/screens/my_events/organization_event.dart';
 import 'package:tadbirio/views/screens/my_events/yaqin.dart';
@@ -19,7 +20,7 @@ class _MyEventsState extends State<MyEvents> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -81,7 +82,6 @@ class _MyEventsState extends State<MyEvents> with TickerProviderStateMixin {
             Tab(text: "Tashkil qilganlarim"),
             Tab(text: "Yaqinda"),
             Tab(text: "Ishtirok etganlarim"),
-            Tab(text: "Bekor qilganlarim"),
           ],
         ),
       ),
@@ -101,11 +101,10 @@ class _MyEventsState extends State<MyEvents> with TickerProviderStateMixin {
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
+        children: const [
           EventPage(),
           NearbyEventsScreen(),
-          Center(child: Text("Content for Tab 3")),
-          Center(child: Text("Content for Tab 4")),
+          RegisteredEventsPage(),
         ],
       ),
     );

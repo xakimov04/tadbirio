@@ -26,7 +26,21 @@ class EventModel {
     required this.description,
     required this.id,
   });
-
+  factory EventModel.fromDocument(DocumentSnapshot doc) {
+    return EventModel(
+      id: doc.id,
+      title: doc['title'],
+      description: doc['description'],
+      day: (doc['day'] as Timestamp).toDate(),
+      beginTime: doc['beginTime'],
+      endTime: doc['endTime'],
+      image: doc['image'],
+      locationName: doc['locationName'],
+      latlang: doc['latlang'],
+      creatorId: doc['creatorId'],
+      isFavorite: doc['isFavorite'] ?? false,
+    );
+  }
   factory EventModel.fromMap(Map<String, dynamic> map) {
     return EventModel(
       id: map['id'],

@@ -1,4 +1,6 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -75,7 +77,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   child: IconButton(
                     icon: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : null,
+                      color: isFavorite ? Colors.red : Colors.black,
                     ),
                     onPressed: () {
                       context.read<EventBloc>().add(
@@ -242,7 +244,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                             ),
                           ),
                           Text(
-                            "Siz ham ro'yxatdan o'ting",
+                            "siz_ham_royxatdan_oting".tr(),
                             style: TextStyle(
                                 color: AdaptiveTheme.of(context).mode ==
                                         AdaptiveThemeMode.dark
@@ -277,14 +279,14 @@ class _EventDetailPageState extends State<EventDetailPage> {
                           "${user.name} ${user.surname}",
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        subtitle: const Text('Tadbir tashkilotchisi'),
+                        subtitle: Text('Tadbir tashkilotchisi'.tr()),
                       );
                     },
                   ),
                   const Gap(20),
-                  const Text(
-                    'Tadbir haqida',
-                    style: TextStyle(
+                  Text(
+                    "tadbir_haqida_ma'lumot".tr(),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -292,9 +294,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   const Gap(10),
                   Text(widget.event.description),
                   const Gap(20),
-                  const Text(
-                    'Manzil',
-                    style: TextStyle(
+                  Text(
+                    'Manzil'.tr(),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -309,31 +311,45 @@ class _EventDetailPageState extends State<EventDetailPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: SizedBox(
+              child: Container(
                 height: 200,
-                child: YandexMap(
-                  rotateGesturesEnabled: false,
-                  zoomGesturesEnabled: false,
-                  scrollGesturesEnabled: false,
-                  onMapCreated: (controller) {
-                    mapController = controller;
-                    _updateMapLocation(widget.event);
-                  },
-                  mapObjects: [
-                    PlacemarkMapObject(
-                      mapId: const MapObjectId("location"),
-                      point: Point(
-                          latitude: widget.event.latlang.latitude,
-                          longitude: widget.event.latlang.longitude),
-                      icon: PlacemarkIcon.single(
-                        PlacemarkIconStyle(
-                          scale: .1,
-                          image: BitmapDescriptor.fromAssetImage(
-                              "assets/icons/marker.png"),
-                        ),
-                      ),
-                    )
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3), // changes position of shadow
+                    ),
                   ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: YandexMap(
+                    rotateGesturesEnabled: false,
+                    zoomGesturesEnabled: false,
+                    scrollGesturesEnabled: false,
+                    onMapCreated: (controller) {
+                      mapController = controller;
+                      _updateMapLocation(widget.event);
+                    },
+                    mapObjects: [
+                      PlacemarkMapObject(
+                        mapId: const MapObjectId("location"),
+                        point: Point(
+                            latitude: widget.event.latlang.latitude,
+                            longitude: widget.event.latlang.longitude),
+                        icon: PlacemarkIcon.single(
+                          PlacemarkIconStyle(
+                            scale: .1,
+                            image: BitmapDescriptor.fromAssetImage(
+                                "assets/icons/marker.png"),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -341,36 +357,66 @@ class _EventDetailPageState extends State<EventDetailPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
               child: ElevatedButton(
                 onPressed: isEventExpired
                     ? null
                     : () {
                         showModalBottomSheet(
                           context: context,
+                          isScrollControlled: true,
                           builder: (context) {
-                            return Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                            int selectedSeats = 1; // Default value
+                            int selectedPayment = 1; // Default value
+                            return StatefulBuilder(
+                              builder:
+                                  (BuildContext context, StateSetter setState) {
+                                return Padding(
+                                  padding: MediaQuery.of(context).viewInsets,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    height: MediaQuery.of(context).size.height *
+                                        0.9,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
                                       children: [
-                                        IconButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          icon: Icon(Icons.arrow_back),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            IconButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              icon:
+                                                  const Icon(Icons.arrow_back),
+                                            ),
+                                            Text(
+                                              "royxatdan_otish".tr(),
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: AdaptiveTheme.of(context)
+                                                            .mode ==
+                                                        AdaptiveThemeMode.dark
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              icon: const Icon(Icons.close),
+                                            ),
+                                          ],
                                         ),
+                                        const Gap(25),
                                         Text(
-                                          "Ro'yxatdan o'tish",
+                                          "joylar_sonini_tanlang".tr(),
                                           style: TextStyle(
-                                            fontSize: 20,
+                                            fontSize: 17,
                                             fontWeight: FontWeight.bold,
                                             color: AdaptiveTheme.of(context)
                                                         .mode ==
@@ -379,48 +425,66 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                                 : Colors.black,
                                           ),
                                         ),
-                                        IconButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          icon: Icon(Icons.close),
-                                        ),
-                                      ],
-                                    ),
-                                    const Gap(25),
-                                    Text(
-                                      "Joylar sonini tanlang",
-                                      style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                        color: AdaptiveTheme.of(context).mode ==
-                                                AdaptiveThemeMode.dark
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                    const Gap(10),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {},
-                                          child: const Card(
-                                            shape: CircleBorder(),
-                                            child: CircleAvatar(
-                                              child: Icon(
-                                                Icons.remove,
-                                                color: Colors.black,
+                                        const Gap(10),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  if (selectedSeats > 1) {
+                                                    selectedSeats--;
+                                                  }
+                                                });
+                                              },
+                                              child: const Card(
+                                                shape: CircleBorder(),
+                                                child: CircleAvatar(
+                                                  child: Icon(
+                                                    Icons.remove,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
+                                            const Gap(10),
+                                            Text(
+                                              "$selectedSeats",
+                                              style: TextStyle(
+                                                fontSize: 25,
+                                                color: AdaptiveTheme.of(context)
+                                                            .mode ==
+                                                        AdaptiveThemeMode.dark
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                              ),
+                                            ),
+                                            const Gap(10),
+                                            GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  selectedSeats++;
+                                                });
+                                              },
+                                              child: const Card(
+                                                shape: CircleBorder(),
+                                                child: CircleAvatar(
+                                                  child: Icon(
+                                                    Icons.add,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        const Gap(10),
+                                        const Gap(25),
                                         Text(
-                                          "0",
+                                          "tolov_turini_tanlang".tr(),
                                           style: TextStyle(
-                                            fontSize: 25,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold,
                                             color: AdaptiveTheme.of(context)
                                                         .mode ==
                                                     AdaptiveThemeMode.dark
@@ -429,78 +493,109 @@ class _EventDetailPageState extends State<EventDetailPage> {
                                           ),
                                         ),
                                         const Gap(10),
-                                        GestureDetector(
-                                          onTap: () {},
-                                          child: const Card(
-                                            shape: CircleBorder(),
-                                            child: CircleAvatar(
-                                              child: Icon(
-                                                Icons.add,
-                                                color: Colors.black,
-                                              ),
+                                        ListTile(
+                                          leading: Image.asset(
+                                              'assets/images/clic.png',
+                                              width: 30),
+                                          title: const Text("Click"),
+                                          trailing: Radio(
+                                            value: 1,
+                                            groupValue: selectedPayment,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                selectedPayment = value as int;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        ListTile(
+                                          leading: Image.asset(
+                                              'assets/images/payme.png',
+                                              width: 30),
+                                          title: const Text("Payme"),
+                                          trailing: Radio(
+                                            value: 2,
+                                            groupValue: selectedPayment,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                selectedPayment = value as int;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        const Gap(25),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ElevatedButton(
+                                            onPressed: () async {
+                                              bool isRegistered =
+                                                  await UserService()
+                                                      .checkRegistration(
+                                                          widget.event.id,
+                                                          FirebaseAuth
+                                                              .instance
+                                                              .currentUser!
+                                                              .uid);
+                                              if (isRegistered) {
+                                                Navigator.pop(context);
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return AlertDialog(
+                                                      title: Text(
+                                                          'Siz allaqachon ro\'yxatdan o\'tgansiz'),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child: Text('OK'),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              } else {
+                                                await UserService()
+                                                    .registerEvent(
+                                                        widget.event.id);
+                                                Navigator.pop(context);
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return AlertDialog(
+                                                      title: Text(
+                                                          'Muvaffaqiyatli ro\'yxatdan o\'tdingiz'),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child: Text('OK'),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
+                                              }
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.orange,
+                                            ),
+                                            child: Text(
+                                              "Keyingi".tr(),
+                                              style: const TextStyle(
+                                                  color: Colors.white),
                                             ),
                                           ),
-                                        )
+                                        ),
                                       ],
                                     ),
-                                    const Gap(25),
-                                    Text(
-                                      "To'lov turini tanlang",
-                                      style: TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                        color: AdaptiveTheme.of(context).mode ==
-                                                AdaptiveThemeMode.dark
-                                            ? Colors.white
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                    const Gap(10),
-                                    Expanded(
-                                      child: ListTile(
-                                        leading: Image.asset(
-                                            'assets/images/clic.png',
-                                            width: 30),
-                                        title: Text("Click"),
-                                        trailing: Radio(
-                                          value: 1,
-                                          groupValue: 0,
-                                          onChanged: (value) {},
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: ListTile(
-                                        leading: Image.asset(
-                                            'assets/images/payme.png',
-                                            width: 30),
-                                        title: Text("Payme"),
-                                        trailing: Radio(
-                                          value: 2,
-                                          groupValue: 0,
-                                          onChanged: (value) {},
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: ElevatedButton(
-                                          onPressed: () {},
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.orange,
-                                          ),
-                                          child: const Text(
-                                            "Keyingi",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                                  ),
+                                );
+                              },
                             );
                           },
                         );
@@ -512,7 +607,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   padding: const EdgeInsets.symmetric(vertical: 15.0),
                 ),
                 child: Text(
-                  isEventExpired ? 'Yakunlangan' : "Ro'yxatdan o'tish",
+                  isEventExpired
+                      ? 'tadbir_yakunlandi'.tr()
+                      : "royxatdan_otish".tr(),
                   style: TextStyle(
                       fontSize: 16,
                       color: isEventExpired ? Colors.grey[700] : Colors.white),
