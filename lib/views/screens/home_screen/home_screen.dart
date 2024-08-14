@@ -196,52 +196,53 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          "yaqin_7_kun_ichida".tr(),
-                          style: TextStyle(
-                            color: AdaptiveTheme.of(context).mode ==
-                                    AdaptiveThemeMode.dark
-                                ? Colors.white
-                                : Colors.black,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                if (upcomingEvents.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            "yaqin_7_kun_ichida".tr(),
+                            style: TextStyle(
+                              color: AdaptiveTheme.of(context).mode ==
+                                      AdaptiveThemeMode.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 180,
-                        child: CarouselSlider(
-                          items: upcomingEvents.map((event) {
-                            return Builder(
-                              builder: (BuildContext context) {
-                                return CarouselContainer(
-                                  event: event,
-                                );
-                              },
-                            );
-                          }).toList(),
-                          options: CarouselOptions(
-                            height: 200,
-                            enlargeCenterPage: false,
-                            autoPlay: false,
-                            aspectRatio: 16 / 5,
-                            autoPlayCurve: Curves.fastOutSlowIn,
-                            enableInfiniteScroll: true,
-                            autoPlayAnimationDuration:
-                                const Duration(milliseconds: 800),
-                            viewportFraction: 0.8,
+                        SizedBox(
+                          height: 180,
+                          child: CarouselSlider(
+                            items: upcomingEvents.map((event) {
+                              return Builder(
+                                builder: (BuildContext context) {
+                                  return CarouselContainer(
+                                    event: event,
+                                  );
+                                },
+                              );
+                            }).toList(),
+                            options: CarouselOptions(
+                              height: 200,
+                              enlargeCenterPage: false,
+                              autoPlay: false,
+                              aspectRatio: 16 / 5,
+                              autoPlayCurve: Curves.fastOutSlowIn,
+                              enableInfiniteScroll: true,
+                              autoPlayAnimationDuration:
+                                  const Duration(milliseconds: 800),
+                              viewportFraction: 0.8,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),

@@ -20,7 +20,7 @@ class _MyEventsState extends State<MyEvents> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -80,8 +80,9 @@ class _MyEventsState extends State<MyEvents> with TickerProviderStateMixin {
           tabAlignment: TabAlignment.start,
           tabs: const [
             Tab(text: "Tashkil qilganlarim"),
+            Spacer(),
             Tab(text: "Yaqinda"),
-            Tab(text: "Ishtirok etganlarim"),
+            // Tab(text: "Ishtirok etganlarim"),
           ],
         ),
       ),
@@ -104,7 +105,7 @@ class _MyEventsState extends State<MyEvents> with TickerProviderStateMixin {
         children: const [
           EventPage(),
           NearbyEventsScreen(),
-          RegisteredEventsPage(),
+          // RegisteredEventsPage(),
         ],
       ),
     );
